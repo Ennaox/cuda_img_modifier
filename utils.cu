@@ -1,6 +1,6 @@
 #include "utils.h"
 
-__host__ get_image(FIBITMAP bitmap, unsigned int* img, unsigned height, unsigned width, unsigned pitch)
+__host__ void get_image(FIBITMAP *bitmap, unsigned int* img, unsigned height, unsigned width, unsigned pitch)
 {
   BYTE *bits = (BYTE*)FreeImage_GetBits(bitmap);
   
@@ -20,9 +20,9 @@ __host__ get_image(FIBITMAP bitmap, unsigned int* img, unsigned height, unsigned
   }
 }
 
-__host__ save_image(FIBITMAP bitmap, unsigned int* img,char** PathDest, unsigned height, unsigned width, unsigned pitch)
+__host__ void save_image(FIBITMAP *bitmap, unsigned int* img,const char* PathDest, unsigned height, unsigned width, unsigned pitch)
 {
-  bits = (BYTE*)FreeImage_GetBits(bitmap);
+  auto bits = (BYTE*)FreeImage_GetBits(bitmap);
   for ( int y =0; y<height; y++)
   {
     BYTE *pixel = (BYTE*)bits;
@@ -45,7 +45,7 @@ __host__ save_image(FIBITMAP bitmap, unsigned int* img,char** PathDest, unsigned
   }
 
   if( FreeImage_Save (FIF_PNG, bitmap , PathDest , 0 ))
-    cout << "Image successfully saved ! " << endl ;
+    printf("Image successfully saved ! \n");
 }
 
 __device__ int get_id()

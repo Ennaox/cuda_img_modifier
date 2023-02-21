@@ -35,34 +35,23 @@ int main(int argc, char** argv)
  	unsigned int *d_img = NULL;
  	unsigned int *d_tmp = NULL;
 
- 	CudaMalloc(&d_img,sizeof(unsigned int) * 3 * width * height);
- 	CudaMalloc(&d_img,sizeof(unsigned int) * 3 * width * height);
+ 	cudaMalloc(&d_img,sizeof(unsigned int) * 3 * width * height);
+ 	cudaMalloc(&d_img,sizeof(unsigned int) * 3 * width * height);
 
  	get_image(bitmap,h_img,height,width,pitch);
 
- 	memcpy(d_img, img, 3 * width * height * sizeof(unsigned int));
- 	memcpy(d_tmp, img, 3 * width * height * sizeof(unsigned int));
+ 	cudaMemcpy(d_img, h_img, 3 * width * height * sizeof(unsigned int),cudaMemcpyHostToDevice);
+ 	cudaMemcpy(d_tmp, h_img, 3 * width * height * sizeof(unsigned int),cudaMemcpyHostToDevice);
+
+
+	int nbthread = 32;
+	int grid_x = width / nbthread + 1;
+	int grid_y = height / nbthread + 1;
+	dim3 grid(grid_x, grid_y, 1);
+	dim3 block(nbthread, nbthread, 1);
 
 	for(int i = 2; i<argc;i++)
 	{
-		if(!strcmp(argv[i],"-o"))
-		{
-			if(out_file)
-			{
-				printf("Error: output name was already given");
-				exit(3);
-			}
-
-			i++;
-			if(argv[i][0] == '-')
-			{
-				printf("Error: \"%s\" is not a valide name\n",argv[i]);
-				exit(2);
-			}
-			out_name = std::string(argv[i]);
-			continue;
-		}
-
 		if(!strcmp(argv[i],"-o"))
 		{
 			if(out_file)
@@ -87,16 +76,19 @@ int main(int argc, char** argv)
 			if(!strcmp(argv[i],"red"))
 			{
 				printf("Saturate Red not yet implemented!\n");
+				cudaDeviceSynchronize();
 				continue;
 			}
 			else if(!strcmp(argv[i],"green"))
 			{
 				printf("Saturate Green not yet implemented!\n");
+				cudaDeviceSynchronize();
 				continue;
 			}
 			else if(!strcmp(argv[i],"blue"))
 			{
 				printf("Saturate Blue not yet implemented!\n");
+				cudaDeviceSynchronize();
 				continue;
 			}
 			else
@@ -133,16 +125,16 @@ int main(int argc, char** argv)
 
 		if(!strcmp(argv[i],"--popart"))
 		{
-			printf("Miror not yet implemented!\n");
+			printf("Popart not yet implemented!\n");
 			continue;
 		}
 	}
 
-
+	save_image(bitmap,d_img,out_name.c_str(),height,width,pitch);
 
 	FreeImage_DeInitialise();
-	CudaFree(d_img);
-	CudaFree(d_tmp);
+	cudaFree(d_img);
+	cudaFree(d_tmp);
 	free(h_img);
 	exit(0);
 }
