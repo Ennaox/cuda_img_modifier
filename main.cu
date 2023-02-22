@@ -3,6 +3,37 @@
 #include <FreeImage.h>
 #include "utils.h"
 
+
+__global__ void saturate_green(unsigned int *d_img, int size)
+{
+  int id = get_id();
+ 
+  if (id < size)
+  {
+      d_img[id * 3 + 1] = 0xFF;
+  }
+}
+
+__global__ void saturate_red(unsigned int *d_img, int size)
+{
+  int id = get_id();
+ 
+  if (id < size)
+  {
+      d_img[id * 3 + 0] = 0xFF;
+  }
+}
+
+__global__ void saturate_blue(unsigned int *d_img, int size)
+{
+  int id = get_id();
+ 
+  if (id < size)
+  {
+      d_img[id * 3 + 2] = 0xFF;
+  }
+}
+
 int main(int argc, char** argv)
 {
 	if(argc <= 1)
@@ -43,6 +74,9 @@ int main(int argc, char** argv)
  	cudaMemcpy(d_img, h_img, 3 * width * height * sizeof(unsigned int),cudaMemcpyHostToDevice);
  	cudaMemcpy(d_tmp, h_img, 3 * width * height * sizeof(unsigned int),cudaMemcpyHostToDevice);
 
+ 	saturate_red<<<grid,block>>>(d_img, height * width);
+ 	saturate_green<<<grid,block>>>(d_img, height * width);
+ 	saturate_blue<<<grid,block>>>(d_img, height * width);
 
 	int nbthread = 32;
 	int grid_x = width / nbthread + 1;

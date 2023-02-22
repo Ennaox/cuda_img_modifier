@@ -48,11 +48,3 @@ __host__ void save_image(FIBITMAP *bitmap, unsigned int* img,const char* PathDes
     printf("Image successfully saved ! \n");
 }
 
-__device__ int get_id()
-{
-  int size_block = blockDim.x * blockDim.y;
-  int id_block = gridDim.x * gridDim.y + gridDim.x * blockIdx.y + blockIdx.x;
-  int id_thread = blockDim.x * blockDim.y + blockDim.x * threadIdx.y + threadIdx.x;
-
-  return id_block * size_block + id_thread;
-}
