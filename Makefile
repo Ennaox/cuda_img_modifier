@@ -6,9 +6,9 @@ default: all
 all: main
 
 main: $(OBJECTS)
-	nvcc $^  -lfreeimage -o $@ -g
+	nvcc -I${HOME}/softs/FreeImage/include $^ -L${HOME}/softs/FreeImage/lib/ -lfreeimage -o $@ -g
 
 %.o: %.cu
-	nvcc $< -c -o $@ 
+	nvcc -I${HOME}/softs/FreeImage/include $< -L${HOME}/softs/FreeImage/lib/ -dc -o $@ -g
 clean:
 	rm -f *.o main

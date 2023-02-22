@@ -22,7 +22,7 @@ __host__ void get_image(FIBITMAP *bitmap, unsigned int* img, unsigned height, un
 
 __host__ void save_image(FIBITMAP *bitmap, unsigned int* img,const char* PathDest, unsigned height, unsigned width, unsigned pitch)
 {
-  auto bits = (BYTE*)FreeImage_GetBits(bitmap);
+  BYTE* bits = (BYTE*)FreeImage_GetBits(bitmap);
   for ( int y =0; y<height; y++)
   {
     BYTE *pixel = (BYTE*)bits;
@@ -46,13 +46,4 @@ __host__ void save_image(FIBITMAP *bitmap, unsigned int* img,const char* PathDes
 
   if( FreeImage_Save (FIF_PNG, bitmap , PathDest , 0 ))
     printf("Image successfully saved ! \n");
-}
-
-__device__ int get_id()
-{
-  int size_block = blockDim.x * blockDim.y;
-  int id_block = gridDim.x * gridDim.y + gridDim.x * blockIdx.y + blockIdx.x;
-  int id_thread = blockDim.x * blockDim.y + blockDim.x * threadIdx.y + threadIdx.x;
-
-  return id_block * size_block + id_thread;
 }
