@@ -209,10 +209,6 @@ int main(int argc, char** argv)
  	cudaMemcpy(d_img, h_img, 3 * width * height * sizeof(unsigned int),cudaMemcpyHostToDevice);
  	cudaMemcpy(d_tmp, h_img, 3 * width * height * sizeof(unsigned int),cudaMemcpyHostToDevice);
 
- 	saturate_red<<<grid,block>>>(d_img, height * width);
- 	saturate_green<<<grid,block>>>(d_img, height * width);
- 	saturate_blue<<<grid,block>>>(d_img, height * width);
-
 	int nbthread = 32;
 	int grid_x = width / nbthread + 1;
 	int grid_y = height / nbthread + 1;
@@ -244,21 +240,21 @@ int main(int argc, char** argv)
 			i++;
 			if(!strcmp(argv[i],"red"))
 			{
-				printf("Saturate Red not yet implemented!\n");
+				saturate_red<<<grid,block>>>(d_img, height * width);
 				cudaDeviceSynchronize();
 				cudaMemcpy(h_img,d_img , 3 * width * height * sizeof(unsigned int),cudaMemcpyDeviceToHost);
 				continue;
 			}
 			else if(!strcmp(argv[i],"green"))
 			{
-				printf("Saturate Green not yet implemented!\n");
+				saturate_green<<<grid,block>>>(d_img, height * width);
 				cudaDeviceSynchronize();
 				cudaMemcpy(h_img,d_img , 3 * width * height * sizeof(unsigned int),cudaMemcpyDeviceToHost);
 				continue;
 			}
 			else if(!strcmp(argv[i],"blue"))
 			{
-				printf("Saturate Blue not yet implemented!\n");
+				saturate_blue<<<grid,block>>>(d_img, height * width);
 				cudaDeviceSynchronize();
 				cudaMemcpy(h_img,d_img , 3 * width * height * sizeof(unsigned int),cudaMemcpyDeviceToHost);
 				continue;
