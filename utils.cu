@@ -46,9 +46,5 @@ __host__ void save_image(FIBITMAP *bitmap, unsigned int* img,const char* PathDes
 
   if( FreeImage_Save (FIF_PNG, bitmap , PathDest , 0 ))
     printf("Image successfully saved ! \n");
-<<<<<<< HEAD
-}
-=======
-}
 
->>>>>>> 29259350ec5a9e751338ffa6f1e67ec98d767914
+}
