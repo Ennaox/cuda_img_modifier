@@ -42,40 +42,125 @@ __global__ void merge_image(unsigned int* d_img, unsigned int* d_tl, unsigned in
 	x = blockIdx.x * blockDim.x + threadIdx.x;
 	y = blockIdx.y * blockDim.y + threadIdx.y;
 	
-	if(blockIdx.y!=0)
-		printf("Y : %d %d %d %d\n",blockIdx.y,blockDim.y,threadIdx.y,y);
-	
 	if(x<width && y<height)
 	{
-		if(x<smallwidth && y<smallheight)
-		{
-			//Top left
-			d_img[(x * width + y)*3 + 0] = d_tl[(x * width + y)*3+0];
-			d_img[(x * width + y)*3 + 1] = d_tl[(x * width + y)*3+1];
-			d_img[(x * width + y)*3 + 2] = d_tl[(x * width + y)*3+2];
-		}
-		if(x>smallwidth && y<smallheight)
-		{
-			//Top right
-			d_img[(x * width + y)*3 + 0] = d_tr[((x * width + y) - width/2)*3 + 0];
-			d_img[(x * width + y)*3 + 1] = d_tr[((x * width + y) - width/2)*3 + 1];
-			d_img[(x * width + y)*3 + 2] = d_tr[((x * width + y) - width/2)*3 + 2];
-		}
 		if(x<smallwidth && y>smallheight)
 		{
-			//Bot left
-			d_img[(x * width + y)*3 + 0] = d_bl[((x * width + y) - height/2)*3 + 0];
-			d_img[(x * width + y)*3 + 1] = d_bl[((x * width + y) - height/2)*3 + 0];
-			d_img[(x * width + y)*3 + 2] = d_bl[((x * width + y) - height/2)*3 + 0];
+			//Top left
+			d_img[(y * width + x)*3 + 0] = d_tl[(y * width/2 + x+width)*3+0];
+			d_img[(y * width + x)*3 + 1] = d_tl[(y * width/2 + x+width)*3+1];
+			d_img[(y * width + x)*3 + 2] = d_tl[(y * width/2 + x+width)*3+2];
+			//d_img[(y * width + x)*3 + 0] = 255;
+			//d_img[(y * width + x)*3 + 1] = 0;
+			//d_img[(y * width + x)*3 + 2] = 0;
 		}
 		if(x>smallwidth && y>smallheight)
 		{
+			//Top right
+			//d_img[(x * width + y)*3 + 0] = d_tr[((x * width + y) - width/2)*3 + 0];
+			//d_img[(x * width + y)*3 + 1] = d_tr[((x * width + y) - width/2)*3 + 1];
+			//d_img[(x * width + y)*3 + 2] = d_tr[((x * width + y) - width/2)*3 + 2];
+			d_img[(y * width + x)*3 + 0] = 0;
+			d_img[(y * width + x)*3 + 1] = 255;
+			d_img[(y * width + x)*3 + 2] = 0;
+		}
+		if(x<smallwidth && y<smallheight)
+		{
+			//Bot left
+			//d_img[(x * width + y)*3 + 0] = d_bl[((x * width + y) - height/2)*3 + 0];
+			//d_img[(x * width + y)*3 + 1] = d_bl[((x * width + y) - height/2)*3 + 0];
+			//d_img[(x * width + y)*3 + 2] = d_bl[((x * width + y) - height/2)*3 + 0];
+			d_img[(y * width + x)*3 + 0] = 0;
+			d_img[(y * width + x)*3 + 1] = 0;
+			d_img[(y * width + x)*3 + 2] = 255;
+		}
+		if(x>smallwidth && y<smallheight)
+		{
 			//Bot right
-			d_img[(x * width + y)*3 + 0] = 100;//d_br[];
-			d_img[(x * width + y)*3 + 1] = 100;//d_br[];
-			d_img[(x * width + y)*3 + 2] = 100;//d_br[];
+			d_img[(y * width + x)*3 + 0] = 100;//d_br[];
+			d_img[(y * width + x)*3 + 1] = 100;//d_br[];
+			d_img[(y * width + x)*3 + 2] = 100;//d_br[];
 		}
 	}
+}
+
+void cpu_merge_image(unsigned int* img, unsigned int* bl, unsigned int* br, unsigned int* tl,unsigned int*  tr, unsigned int height, unsigned int width)
+{
+	for(size_t x = 0; x<width/2; x++)
+	{
+		for(size_t y = 0; y<height/2; y++)
+		{
+			img[(y * width + x)*3 + 0] = bl[(y * width/2 + x)*3+0];
+			img[(y * width + x)*3 + 1] = bl[(y * width/2 + x)*3+1];
+			img[(y * width + x)*3 + 2] = bl[(y * width/2 + x)*3+2];
+		}
+	}
+
+	for(size_t x = 0; x<width/2; x++)
+	{
+		for(size_t y = 0; y<height/2; y++)
+		{
+			img[((y+ height/2)  * width + x)*3 + 0] = tl[(y * width/2 + x)*3+0];
+			img[((y + height/2) * width + x)*3 + 1] = tl[(y * width/2 + x)*3+1];
+			img[((y + height/2) * width + x)*3 + 2] = tl[(y * width/2 + x)*3+2];
+		}
+	}
+
+	for(size_t x = 0; x<width/2; x++)
+	{
+		for(size_t y = 0; y<height/2; y++)
+		{
+			img[((y + height/2) * width + x + width/2)*3 + 0] = tr[(y * width/2 + x)*3+0];
+			img[((y + height/2) * width + x + width/2)*3 + 1] = tr[(y * width/2 + x)*3+1];
+			img[((y + height/2) * width + x + width/2)*3 + 2] = tr[(y * width/2 + x)*3+2];
+		}
+	}	
+
+	for(size_t x = 0; x<width/2; x++)
+	{
+		for(size_t y = 0; y<height/2; y++)
+		{
+			img[(y  * width + x + width/2)*3 + 0] = br[(y * width/2 + x)*3+0];
+			img[(y * width + x + width/2)*3 + 1] = br[(y * width/2 + x)*3+1];
+			img[(y  * width + x + width/2)*3 + 2] = br[(y * width/2 + x)*3+2];
+		}
+	}	
+}
+
+__global__ void saturate_green(unsigned int *d_img, int size)
+{
+  int id = get_id();
+ 
+  if (id < size)
+  {
+      d_img[id*3 + 0] = 0xFF - d_img[id*3 + 0];
+      d_img[id*3 + 1] = 0xFF / 2;
+      d_img[id*3 + 2] /= 4;
+  }
+}
+
+__global__ void saturate_red(unsigned int *d_img, int size)
+{
+  int id = get_id();
+ 
+  if (id < size)
+  {
+      d_img[id*3 + 0] = 0xFF / 2;
+      d_img[id*3 + 1] /= 2;
+      d_img[id*3 + 2] /= 2;
+  }
+}
+
+__global__ void saturate_blue(unsigned int *d_img, int size)
+{
+  int id = get_id();
+ 
+  if (id < size)
+  {
+      d_img[id * 3 + 0] /= 2;
+      d_img[id * 3 + 1] /= 4;
+      d_img[id * 3 + 2] = 0xFF / 1.5;
+  }
 }
 
 void popart(FIBITMAP * bitmap, unsigned int *img, unsigned height, unsigned width, unsigned pitch)
@@ -99,6 +184,12 @@ void popart(FIBITMAP * bitmap, unsigned int *img, unsigned height, unsigned widt
   unsigned int *d_br = NULL;
 
  unsigned int *h_img = (unsigned int*) malloc(sizeof(unsigned int) * 3 * (smallwidth) * (smallheight));
+ 
+ unsigned int *h_tl; cudaMallocHost(&h_tl,sizeof(unsigned int) * 3 * (smallwidth) * (smallheight));
+ unsigned int *h_bl; cudaMallocHost(&h_bl,sizeof(unsigned int) * 3 * (smallwidth) * (smallheight));
+ unsigned int *h_tr; cudaMallocHost(&h_tr,sizeof(unsigned int) * 3 * (smallwidth) * (smallheight));
+ unsigned int *h_br; cudaMallocHost(&h_br,sizeof(unsigned int) * 3 * (smallwidth) * (smallheight));
+ 
  cudaMalloc(&d_img,sizeof(unsigned int) * 3 * (width) * (height));
  cudaMalloc(&d_tl,sizeof(unsigned int) * 3 * (smallwidth) * (smallheight));
  cudaMalloc(&d_bl,sizeof(unsigned int) * 3 * (smallwidth) * (smallheight));
@@ -106,17 +197,35 @@ void popart(FIBITMAP * bitmap, unsigned int *img, unsigned height, unsigned widt
  cudaMalloc(&d_br,sizeof(unsigned int) * 3 * (smallwidth) * (smallheight));
 
  get_image(split,h_img,smallheight,smallwidth,smallpitch);
- 
- cudaMemcpy(d_tl, h_img, 3 * (smallwidth) * (smallheight) * sizeof(unsigned int),cudaMemcpyHostToDevice);
- //Mettre rouge
- cudaMemcpy(d_bl, h_img, 3 * (smallwidth) * (smallheight) * sizeof(unsigned int),cudaMemcpyHostToDevice);
- //Mettre bleu
- cudaMemcpy(d_tr, h_img, 3 * (smallwidth) * (smallheight) * sizeof(unsigned int),cudaMemcpyHostToDevice);
- //Mettre vert
- cudaMemcpy(d_br, h_img, 3 * (smallwidth) * (smallheight) * sizeof(unsigned int),cudaMemcpyHostToDevice);
- 
- //grey<<<smallgrid,smallblock>>>(d_img, height/2 * width/2);
 
+ cudaStream_t stream[4];
+ for(int i = 0; i<4; i++)
+ {
+ 	cudaStreamCreate(&stream[i]);
+ }
+
+ cudaMemcpyAsync(d_tl, h_img, 3 * (smallwidth) * (smallheight) * sizeof(unsigned int),cudaMemcpyHostToDevice,stream[0]);
+ saturate_red<<<smallgrid,smallblock,0,stream[0]>>>(d_tl, smallheight * smallwidth);
+ cudaMemcpyAsync(h_tl, d_tl, 3 * (smallwidth) * (smallheight) * sizeof(unsigned int),cudaMemcpyDeviceToHost,stream[0]);
+ 
+
+ cudaMemcpyAsync(d_bl, h_img, 3 * (smallwidth) * (smallheight) * sizeof(unsigned int),cudaMemcpyHostToDevice,stream[1]);
+ saturate_green<<<smallgrid,smallblock,0,stream[1]>>>(d_bl, smallheight * smallwidth);
+ cudaMemcpyAsync(h_bl, d_bl, 3 * (smallwidth) * (smallheight) * sizeof(unsigned int),cudaMemcpyDeviceToHost,stream[1]);
+
+ cudaMemcpyAsync(d_tr, h_img, 3 * (smallwidth) * (smallheight) * sizeof(unsigned int),cudaMemcpyHostToDevice,stream[2]);
+ saturate_blue<<<smallgrid,smallblock,0,stream[2]>>>(d_tr, smallheight * smallwidth);
+ cudaMemcpyAsync(h_tr, d_tr, 3 * (smallwidth) * (smallheight) * sizeof(unsigned int),cudaMemcpyDeviceToHost,stream[2]);
+
+ cudaMemcpyAsync(d_br, h_img, 3 * (smallwidth) * (smallheight) * sizeof(unsigned int),cudaMemcpyHostToDevice,stream[3]);
+ grey<<<smallgrid,smallblock,0,stream[3]>>>(d_br, smallheight * smallwidth);
+ cudaMemcpyAsync(h_br, d_br, 3 * (smallwidth) * (smallheight) * sizeof(unsigned int),cudaMemcpyDeviceToHost,stream[3]);
+
+ cudaError_t cudaerr = cudaDeviceSynchronize();
+				  if (cudaerr != cudaSuccess)
+				    printf("kernel launch failed with error \"%s\".\n",cudaGetErrorString(cudaerr));
+
+ /*
  //fusionner image
  nbthread = 32;
  grid_x = width / nbthread + 1;
@@ -129,7 +238,9 @@ void popart(FIBITMAP * bitmap, unsigned int *img, unsigned height, unsigned widt
  cudaDeviceSynchronize();
  
  cudaMemcpy(img,d_img,3*width*height*sizeof(unsigned int), cudaMemcpyDeviceToHost);
+ */
 
+ cpu_merge_image(img,h_bl,h_br,h_tl,h_tr,height,width);
  cudaFree(d_img);
  cudaFree(d_tl);
  cudaFree(d_bl);
@@ -139,34 +250,136 @@ void popart(FIBITMAP * bitmap, unsigned int *img, unsigned height, unsigned widt
  free(h_img);
 }
 
-__global__ void saturate_green(unsigned int *d_img, int size)
+__global__ void sobel(unsigned int *d_img, unsigned int *d_tmp, unsigned height, unsigned width,unsigned size)
 {
-  int id = get_id();
+	int x,y;
+	x = blockIdx.x * blockDim.x + threadIdx.x;
+	y = blockIdx.y * blockDim.y + threadIdx.y;
+
+	unsigned int gx_x = 0;
+	unsigned int gx_y = 0;
+	unsigned int gx_z = 0;
+
+	unsigned int gy_x = 0;
+	unsigned int gy_y = 0;
+	unsigned int gy_z = 0;
+
+	if(x*y<size && x>0 && y>0 && x<size-1 && y<size-1)
+	{	
+		//Horizontal convolution
+		//Compute first column
+		gx_x += d_tmp[((y-1) * width + x-1)*3 + 0];
+		gx_y += d_tmp[((y-1) * width + x-1)*3 + 0];
+		gx_z += d_tmp[((y-1) * width + x-1)*3 + 0];
+
+		gx_x +=2* d_tmp[(y * width + x-1)*3 + 0];
+		gx_y +=2* d_tmp[(y * width + x-1)*3 + 0];
+		gx_z +=2* d_tmp[(y * width + x-1)*3 + 0];
+
+		gx_x += d_tmp[((y+1) * width + x-1)*3 + 0];
+		gx_y += d_tmp[((y+1) * width + x-1)*3 + 0];
+		gx_z += d_tmp[((y+1) * width + x-1)*3 + 0];
+
+		//Compute
+		//Compute third column
+		gx_x -= d_tmp[((y-1) * width + x+1)*3 + 0];
+		gx_y -= d_tmp[((y-1) * width + x+1)*3 + 0];
+		gx_z -= d_tmp[((y-1) * width + x+1)*3 + 0];
+
+		gx_x -=2* d_tmp[(y * width + x+1)*3 + 0];
+		gx_y -=2* d_tmp[(y * width + x+1)*3 + 0];
+		gx_z -=2* d_tmp[(y * width + x+1)*3 + 0];
+
+		gx_x -= d_tmp[((y+1) * width + x+1)*3 + 0];
+		gx_y -= d_tmp[((y+1) * width + x+1)*3 + 0];
+		gx_z -= d_tmp[((y+1) * width + x+1)*3 + 0];
+
+
+		//Vertical convolution
+		//Compute first line
+		gy_x += d_tmp[((y+1) * width + x-1)*3 + 0];
+		gy_y += d_tmp[((y+1) * width + x-1)*3 + 0];
+		gy_z += d_tmp[((y+1) * width + x-1)*3 + 0];
+
+		gy_x +=2* d_tmp[((y+1) * width + x)*3 + 0];
+		gy_y +=2* d_tmp[((y+1) * width + x)*3 + 0];
+		gy_z +=2* d_tmp[((y+1) * width + x)*3 + 0];
+
+		gy_x += d_tmp[((y+1) * width + x+1)*3 + 0];
+		gy_y += d_tmp[((y+1) * width + x+1)*3 + 0];
+		gy_z += d_tmp[((y+1) * width + x+1)*3 + 0];
+
+		//Compute
+		//Compute third column
+		gy_x -= d_tmp[((y-1) * width + x-1)*3 + 0];
+		gy_y -= d_tmp[((y-1) * width + x-1)*3 + 0];
+		gy_z -= d_tmp[((y-1) * width + x-1)*3 + 0];
+
+		gy_x -=2* d_tmp[((y-1) * width + x)*3 + 0];
+		gy_y -=2* d_tmp[((y-1) * width + x)*3 + 0];
+		gy_z -=2* d_tmp[((y-1) * width + x)*3 + 0];
+
+		gy_x -= d_tmp[((y-1) * width + x+1)*3 + 0];
+		gy_y -= d_tmp[((y-1) * width + x+1)*3 + 0];
+		gy_z -= d_tmp[((y-1) * width + x+1)*3 + 0];
+
+		if((unsigned char)sqrt((float)(gx_x * gx_x + gy_x * gy_x))<127)
+		{
+			d_img[(y * width + x)*3 + 0] = 0;
+			d_img[(y * width + x)*3 + 1] = 0;
+			d_img[(y * width + x)*3 + 2] = 0;
+		}
+		else
+		{
+			d_img[(y * width + x)*3 + 0] = 255;
+			d_img[(y * width + x)*3 + 1] = 255;
+			d_img[(y * width + x)*3 + 2] = 255;	
+		}
+	}
+}
+
+__global__ void negatif(unsigned int *d_img, int size)
+{
+	int id = get_id();
  
   if (id < size)
   {
-      d_img[id * 3 + 1] = 0xFF;
+      d_img[id * 3 + 0] = 0xFF - d_img[id * 3 + 0];
+      d_img[id * 3 + 1] = 0xFF - d_img[id * 3 + 1];
+      d_img[id * 3 + 2] = 0xFF - d_img[id * 3 + 2];
   }
 }
 
-__global__ void saturate_red(unsigned int *d_img, int size)
+__global__ void blur(unsigned int *d_img, unsigned int *d_tmp, unsigned height, unsigned width,unsigned size)
 {
-  int id = get_id();
- 
-  if (id < size)
-  {
-      d_img[id * 3 + 0] = 0xFF;
-  }
-}
+	int id = get_id();
+	//If to prevent 
+	if(id < size && id % width != 0 && (id + 1) % width != 0 && (id / width) % height != 0 && ((id + 1) / width) % height != 0)
+	{
+		unsigned int mean_x = d_img[id * 3 + 0];
+		unsigned int mean_y = d_img[id * 3 + 1];
+		unsigned int mean_z = d_img[id * 3 + 2];
 
-__global__ void saturate_blue(unsigned int *d_img, int size)
-{
-  int id = get_id();
- 
-  if (id < size)
-  {
-      d_img[id * 3 + 2] = 0xFF;
-  }
+		mean_x += d_tmp[(id-1) * 3 + 0];
+		mean_y += d_tmp[(id-1) * 3 + 1];
+		mean_z += d_tmp[(id-1) * 3 + 2];
+
+		mean_x += d_tmp[(id+1) * 3 + 0];
+		mean_y += d_tmp[(id+1) * 3 + 1];
+		mean_z += d_tmp[(id+1) * 3 + 2];
+
+		mean_x += d_tmp[(id-width) * 3 + 0];
+		mean_y += d_tmp[(id-width) * 3 + 1];
+		mean_z += d_tmp[(id-width) * 3 + 2];
+
+		mean_x += d_tmp[(id+width) * 3 + 0];
+		mean_y += d_tmp[(id+width) * 3 + 1];
+		mean_z += d_tmp[(id+width) * 3 + 2];
+
+		d_img[id * 3 + 0] = mean_x / (unsigned char)5;
+    d_img[id * 3 + 1] = mean_y / (unsigned char)5;
+    d_img[id * 3 + 2] = mean_z / (unsigned char)5;
+	}
 }
 
 int main(int argc, char** argv)
@@ -206,9 +419,6 @@ int main(int argc, char** argv)
 
  	get_image(bitmap,h_img,height,width,pitch);
 
- 	cudaMemcpy(d_img, h_img, 3 * width * height * sizeof(unsigned int),cudaMemcpyHostToDevice);
- 	cudaMemcpy(d_tmp, h_img, 3 * width * height * sizeof(unsigned int),cudaMemcpyHostToDevice);
-
 	int nbthread = 32;
 	int grid_x = width / nbthread + 1;
 	int grid_y = height / nbthread + 1;
@@ -240,22 +450,32 @@ int main(int argc, char** argv)
 			i++;
 			if(!strcmp(argv[i],"red"))
 			{
+				cudaMemcpy(d_img, h_img, 3 * width * height * sizeof(unsigned int),cudaMemcpyHostToDevice);
 				saturate_red<<<grid,block>>>(d_img, height * width);
-				cudaDeviceSynchronize();
+				cudaError_t cudaerr = cudaDeviceSynchronize();
+				  if (cudaerr != cudaSuccess)
+				    printf("kernel launch failed with error \"%s\".\n",cudaGetErrorString(cudaerr));
+				
 				cudaMemcpy(h_img,d_img , 3 * width * height * sizeof(unsigned int),cudaMemcpyDeviceToHost);
 				continue;
 			}
 			else if(!strcmp(argv[i],"green"))
 			{
+				cudaMemcpy(d_img, h_img, 3 * width * height * sizeof(unsigned int),cudaMemcpyHostToDevice);
 				saturate_green<<<grid,block>>>(d_img, height * width);
-				cudaDeviceSynchronize();
+				cudaError_t cudaerr = cudaDeviceSynchronize();
+				  if (cudaerr != cudaSuccess)
+				    printf("kernel launch failed with error \"%s\".\n",cudaGetErrorString(cudaerr));
 				cudaMemcpy(h_img,d_img , 3 * width * height * sizeof(unsigned int),cudaMemcpyDeviceToHost);
 				continue;
 			}
 			else if(!strcmp(argv[i],"blue"))
 			{
+				cudaMemcpy(d_img, h_img, 3 * width * height * sizeof(unsigned int),cudaMemcpyHostToDevice);
 				saturate_blue<<<grid,block>>>(d_img, height * width);
-				cudaDeviceSynchronize();
+				cudaError_t cudaerr = cudaDeviceSynchronize();
+				  if (cudaerr != cudaSuccess)
+				    printf("kernel launch failed with error \"%s\".\n",cudaGetErrorString(cudaerr));
 				cudaMemcpy(h_img,d_img , 3 * width * height * sizeof(unsigned int),cudaMemcpyDeviceToHost);
 				continue;
 			}
@@ -266,36 +486,66 @@ int main(int argc, char** argv)
 			}
 			continue;
 		}
-
-		if(!strcmp(argv[i],"--miror"))
+		if(!strcmp(argv[i],"--negatif"))
+			{
+				cudaMemcpy(d_img, h_img, 3 * width * height * sizeof(unsigned int),cudaMemcpyHostToDevice);
+				negatif<<<grid,block>>>(d_img, height * width);
+				cudaError_t cudaerr = cudaDeviceSynchronize();
+				  if (cudaerr != cudaSuccess)
+				    printf("kernel launch failed with error \"%s\".\n",cudaGetErrorString(cudaerr));
+				cudaMemcpy(h_img,d_img , 3 * width * height * sizeof(unsigned int),cudaMemcpyDeviceToHost);
+				continue;
+			}
+		if(!strcmp(argv[i],"--flip"))
 		{
 			//printf("Miror not yet implemented!\n");
+			cudaMemcpy(d_img, h_img, 3 * width * height * sizeof(unsigned int),cudaMemcpyHostToDevice);
+ 			cudaMemcpy(d_tmp, h_img, 3 * width * height * sizeof(unsigned int),cudaMemcpyHostToDevice);
 			symetry<<<grid,block>>>(d_img,d_tmp, height * width);
-			cudaDeviceSynchronize();
+			cudaError_t cudaerr = cudaDeviceSynchronize();
+				  if (cudaerr != cudaSuccess)
+				    printf("kernel launch failed with error \"%s\".\n",cudaGetErrorString(cudaerr));
 			cudaMemcpy(h_img,d_img , 3 * width * height * sizeof(unsigned int),cudaMemcpyDeviceToHost);
 			continue;
 		}
 
 		if(!strcmp(argv[i],"--blur"))
 		{
-			printf("Blur not yet implemented!\n");
-			cudaDeviceSynchronize();
-			cudaMemcpy(h_img,d_img , 3 * width * height * sizeof(unsigned int),cudaMemcpyDeviceToHost);
+			i++;
+			for(int z =0; z<atoi(argv[i]); z++)
+			{
+				cudaMemcpy(d_img, h_img, 3 * width * height * sizeof(unsigned int),cudaMemcpyHostToDevice);
+			 	cudaMemcpy(d_tmp, h_img, 3 * width * height * sizeof(unsigned int),cudaMemcpyHostToDevice);
+			 	blur<<<grid,block>>>(d_img,d_tmp,height,width, height*width);
+				
+				cudaError_t cudaerr = cudaDeviceSynchronize();
+					  if (cudaerr != cudaSuccess)
+					    printf("kernel launch failed with error \"%s\".\n",cudaGetErrorString(cudaerr));
+				cudaMemcpy(h_img,d_img , 3 * width * height * sizeof(unsigned int),cudaMemcpyDeviceToHost);
+			}
 			continue;
 		}
 
 		if(!strcmp(argv[i],"--grey"))
 		{
+			cudaMemcpy(d_img, h_img, 3 * width * height * sizeof(unsigned int),cudaMemcpyHostToDevice);
 			grey<<<grid,block>>>(d_img, height * width);
-			cudaDeviceSynchronize();
+			cudaError_t cudaerr = cudaDeviceSynchronize();
+				  if (cudaerr != cudaSuccess)
+				    printf("kernel launch failed with error \"%s\".\n",cudaGetErrorString(cudaerr));
 			cudaMemcpy(h_img,d_img , 3 * width * height * sizeof(unsigned int),cudaMemcpyDeviceToHost);
 			continue;
 		}
 
 		if(!strcmp(argv[i],"--sobel"))
 		{
-			printf("Sobel not yet implemented!\n");
-			cudaDeviceSynchronize();
+			cudaMemcpy(d_img, h_img, 3 * width * height * sizeof(unsigned int),cudaMemcpyHostToDevice);
+			grey<<<grid,block>>>(d_img, height * width);
+			cudaMemcpy(d_tmp, d_img, 3 * width * height * sizeof(unsigned int),cudaMemcpyDeviceToDevice);
+			sobel<<<grid,block>>>(d_img,d_tmp,height,width,height*width);
+			cudaError_t cudaerr = cudaDeviceSynchronize();
+				  if (cudaerr != cudaSuccess)
+				    printf("kernel launch failed with error \"%s\".\n",cudaGetErrorString(cudaerr));
 			cudaMemcpy(h_img,d_img , 3 * width * height * sizeof(unsigned int),cudaMemcpyDeviceToHost);
 			continue;
 		}
@@ -306,7 +556,9 @@ int main(int argc, char** argv)
 			continue;
 		}
 	}
-	cudaDeviceSynchronize();
+	cudaError_t cudaerr = cudaDeviceSynchronize();
+				  if (cudaerr != cudaSuccess)
+				    printf("kernel launch failed with error \"%s\".\n",cudaGetErrorString(cudaerr));
 	printf("Saving image...\n");
 	save_image(bitmap,h_img,out_name.c_str(),height,width,pitch);
 
